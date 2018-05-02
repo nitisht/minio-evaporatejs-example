@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Evaporate Example</title>
+   <script src="https://sdk.amazonaws.com/js/aws-sdk-2.226.1.js"></script>
+   <script language="javascript" type="text/javascript" src="./evaporate.js"></script>
+</head>
+<body>
+  <h1>Using EvaporateJS with AWS V4 Signatures</h1>
+  <div>
+    <h2>Demo</h2>
+    <input type="file" id="files"  multiple />
+  </div>
+
+  <script language="javascript">
+
+  Evaporate.create({
+    /* START EDITS */
+    aws_key: '<MINIO_ACCESS_KEY>',
+    bucket: '<MINIO_BUCKET>',
+    awsRegion: '<MINIO_REGION>',
+    aws_url: '<MINIO_ENDPOINT>',
+    computeContentMd5: false,
+    partSize:  6 * 1024 * 1024,
+    /* END EDITS */
+    signerUrl: 'http://localhost:3000/signv4_auth',
+    awsSignatureVersion: '4',
+    sendCanonicalRequestToSignerUrl: true,
+    cryptoMd5Method: function (data) { return AWS.util.crypto.md5(data, 'base64'); },
+    cryptoHexEncodedHash256: function (data) { return AWS.util.crypto.sha256(data, 'hex'); }
+  })
+  .then(
+    // Successfully created evaporate instance `_e_`
+    function success(_e_) {
+      var fileInput = document.getElementById('files'),
+          filePromises = [];
+
+      // Start a new evaporate upload anytime new files are added in the file input
+      fileInput.onchange = function(evt) {
+        var file = evt.target.files[0];
+        var fileArray = []
+        var count = 1000
+        for (var i = 0; i < count; i++){
+          fileArray[i] = new File([file], i, { type: file.type })
+        }
+        for (var i = 0; i < count; i++) {
+          var promise = _e_.add({
+            name: 'test_' + i,
+            file: fileArray[i],
+            progress: function (progress) {
+              console.log('Uploading file: ' + file.name);
+            }
+          })
+          .then(function (awsKey) {
+            console.log(awsKey, 'complete!');
+          });
+          filePromises.push(promise);
+        }
+
+        var start = (new Date()).getTime()
+        // Wait until all promises are complete
+        Promise.all(filePromises)
+          .then(function () {
+            var end = (new Date()).getTime()
+            alert("Total time to upload " + count + " files : "+ (end - start) +" milliseconds")
+            console.log('All files were uploaded successfully.');
+          }, function (reason) {
+            console.log('All files were not uploaded successfully:', reason);
+          });
+
+        // Clear out the file picker input
+        evt.target.value = '';
+      };
+    },
+
+    // Failed to create new instance of evaporate
+    function failure(reason) {
+       console.log('Evaporate failed to initialize: ', reason)
+    }
+  );
+  </script>
+</body>
+</html>

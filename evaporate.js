@@ -73,7 +73,7 @@
       timeUrl: null,
       cryptoMd5Method: null,
       cryptoHexEncodedHash256: null,
-      aws_key: null,
+      awsAccessKey: null,
       awsRegion: 'us-east-1',
       awsSignatureVersion: '4',
       sendCanonicalRequestToSignerUrl: false,
@@ -1016,8 +1016,7 @@
     this.started = defer();
 
     this.awsUrl = awsUrl(this.con);
-    this.awsHost = uri(this.awsUrl).hostname;// + ":" + uri(this.awsUrl).port;
-
+    this.awsHost = uri(this.awsUrl).hostname + ":" + uri(this.awsUrl).port;
     var r = extend({}, request);
     if (fileUpload.contentType) {
       r.contentType = fileUpload.contentType;
@@ -1635,7 +1634,7 @@
     AwsSignatureV2.prototype = Object.create(AwsSignature.prototype);
     AwsSignatureV2.prototype.constructor = AwsSignatureV2;
     AwsSignatureV2.prototype.authorizationString = function () {
-      return ['AWS ', con.aws_key, ':', this.request.auth].join('');
+      return ['AWS ', con.awsAccessKey, ':', this.request.auth].join('');
     };
     AwsSignatureV2.prototype.stringToSign = function () {
       var x_amz_headers = '', result, header_key_array = [];
@@ -1689,7 +1688,7 @@
       var credentials = this.credentialString();
       var headers = this.canonicalHeaders();
 
-      authParts.push(['AWS4-HMAC-SHA256 Credential=', con.aws_key, '/', credentials].join(''));
+      authParts.push(['AWS4-HMAC-SHA256 Credential=', con.awsAccessKey, '/', credentials].join(''));
       authParts.push('SignedHeaders=' + headers.signedHeaders);
       authParts.push('Signature=' + this.request.auth);
 
@@ -1939,8 +1938,8 @@
 
   function awsUrl(con) {
     var url;
-    if (con.aws_url) {
-      url = [con.aws_url];
+    if (con.awsUrl) {
+      url = [con.awsUrl];
     } else {
       if (con.s3Acceleration) {
         url = ["https://", con.bucket, ".s3-accelerate"];
@@ -1981,7 +1980,7 @@
       p = document.createElement('a');
       p.href = href;
     }
-
+    console.log('Port is', p.port)
     return {
       protocol: p.protocol, // => "http:"
       hostname: p.hostname, // => "example.com"

@@ -39,10 +39,10 @@ Then, start the signing server by
 Open the file `evaporate_minio.html` and update the following sections
 
 ```sh
-aws_key: '<MINIO_ACCESS_KEY>',
+awsAccessKey: '<MINIO_ACCESS_KEY>',
 bucket: '<MINIO_BUCKET>',
 awsRegion: '<MINIO_REGION>',
-aws_url: '<MINIO_ENDPOINT>',
+awsUrl: '<MINIO_ENDPOINT>',
 ```
 
 You can also configure MD5 calculation and default part size using fields
